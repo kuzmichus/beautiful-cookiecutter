@@ -1,0 +1,20 @@
+name: Deploy Docker Image
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
+    - name: Install sshpass
+      run: sudo apt-get update && sudo apt-get install -y sshpass
+      
+    - name: Deploy Docker image
+      run: |
+        sshpass -p ${{ secrets.SSH_PASSWORD }} scp -o StrictHostKeyChecking=no ./docker-compose.yml username@server:/path/to/docker-compose.yml
+        sshpass -p ${{ secrets.SSH_PASSWORD }} ssh -o StrictHostKeyChecking=no username@server 'docker login hub.kuzin.name -u hub.kuzin.name -p hub.kuzin.name-password && docker pull hub.kuzin.name/samalet-web:latest && docker-compose -f /path/to/docker-compose.yml up -d'
